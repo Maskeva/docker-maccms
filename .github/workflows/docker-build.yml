@@ -1,0 +1,45 @@
+name: Docker Build and Push to Docker Hub
+
+# 触发条件：在 push 代码到 main 分支时触发此工作流程
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 设置 Docker 元数据（用于生成标签）
+      - name: Get Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # ************ 关键修改在这里 ************
+          # 将 images 设置为您的仓库名称
+          images: risedog/maccms10-m 
+          # ****************************************
+          tags: |
+            type=sha,prefix=,suffix=,event=push,format=short
+            # 主分支推送时，额外添加 'latest' 标签
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }} 
+
+      # 3. 登录 Docker Hub (使用前面设置的 Secret)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }} # 建议使用 Access Token
+
+      # 4. 构建并推送到 Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Dockerfile 所在的路径
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
