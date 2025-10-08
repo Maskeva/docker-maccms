@@ -1,9 +1,9 @@
 #version: '3.8'
 
 services:
-  # PHP-FPM服务
+  # PHP-FPM
   app:
-    image: maskeva/docker-maccms:latest
+    image: risedog/maccms10-m:latest
     container_name: maccms_app
     restart: unless-stopped
     volumes:
@@ -14,7 +14,7 @@ services:
     networks:
       - maccms_network
 
-  # Nginx Web服务器
+  # Nginx Web
   web:
     image: nginx:latest
     container_name: maccms_web
@@ -31,7 +31,7 @@ services:
     networks:
       - maccms_network
 
-  # MySQL数据库
+  # MySQL
   db:
     image: mysql:8.0
     container_name: maccms_db
